@@ -25,7 +25,6 @@ router.get('/login/:rfid', (req, rsp) => {
   const scope = 'user-read-private user-read-email';
   rfid  = req.params.rfid;
   state = generateRandomString(16);
-  console.log(req.socket.remoteAddress);
   rsp.redirect('https://accounts.spotify.com/authorize/?' +
     new URLSearchParams({
       response_type: 'code',

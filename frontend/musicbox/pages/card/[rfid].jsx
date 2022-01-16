@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useRouter } from "next/router"
+import Album from '../../components/album'
 
 const CardDetail = ({card, access_token}) => {
-  const [newCard, setNewCard]       = useState(card);
-  const router                      = useRouter();
+  const [searchName, setSearchName]  = useState("");
+  const [albums, setAlbums]          = useState([]);
+  const router                       = useRouter();
   const handleSubmit = async (e) => {
     const response = await fetch(`http://localhost:4000/card/${card.rfid}`, {
       method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -20,6 +22,27 @@ const CardDetail = ({card, access_token}) => {
     });
     router.back();
   };
+  const handleSearch = async (e) => {
+    const response = await fetch(`https://api.spotify.com/v1/search?type=album&q=${searchName}&limit=10`, {
+      headers: {
+        Authorization: `Bearer ${access_token}`
+      }
+    });
+    const results  = await response.json();
+    const albums = results.albums.items.map((item) => {
+      return(
+        {
+          name: item.name,
+          artist: item.artists[0].name,
+          image: item.images[2].url,
+          uri: item.uri,
+          id: item.id
+        }
+      );
+    });
+    setAlbums(albums);
+    setSearchName("");
+  }
   if (access_token === '') {
     return(
       <div className="logged_out">
@@ -30,8 +53,12 @@ const CardDetail = ({card, access_token}) => {
   else {
     return(
       <div className="card_detail">
-        <input value={newCard.name} onChange={(e) => setNewCard({...newCard, name: e.target.value})}/>
+        <input value={searchName} onChange={(e) => setSearchName(e.target.value)}/>
+        <button onClick={(e) => handleSearch(e)}>Search</button>
         <button onClick={(e) => handleSubmit(e)}>Submit</button>
+        <ul>
+          {albums.map((album) => {return <Album album={album} key={album.id}/>})}
+        </ul>
       </div>
     );
   }
