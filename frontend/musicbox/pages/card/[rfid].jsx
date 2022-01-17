@@ -1,27 +1,37 @@
-import { useState } from "react";
+import { useState , useEffect, useRef } from "react";
 import { useRouter } from "next/router"
 import Album from '../../components/album'
 
 const CardDetail = ({card, access_token}) => {
   const [searchName, setSearchName]  = useState("");
   const [albums, setAlbums]          = useState([]);
+  const [newCard, setNewCard]        = useState(card);
+  const isRender                     = useRef(true);
   const router                       = useRouter();
-  const handleSubmit = async (e) => {
-    const response = await fetch(`http://localhost:4000/card/${card.rfid}`, {
-      method: 'POST', // *GET, POST, PUT, DELETE, etc.
-      mode: 'cors', // no-cors, *cors, same-origin
-      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: 'same-origin', // include, *same-origin, omit
-      headers: {
-        'Content-Type': 'application/json'
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: 'follow', // manual, *follow, error
-      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      body: JSON.stringify(newCard) // body data type must match "Content-Type" header
-    });
-    router.back();
-  };
+  useEffect(async () => {
+    if (isRender.current === false) {
+      const response = await fetch(`http://localhost:4000/card/${card.rfid}`, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(newCard) // body data type must match "Content-Type" header
+      });
+      setAlbums([]);
+    }
+  }, [newCard]);
+  useEffect(() => {
+    if (isRender.current === true) {
+      isRender.current = false;
+      return;
+    }
+  })
   const handleSearch = async (e) => {
     const response = await fetch(`https://api.spotify.com/v1/search?type=album&q=${searchName}&limit=10`, {
       headers: {
@@ -53,11 +63,13 @@ const CardDetail = ({card, access_token}) => {
   else {
     return(
       <div className="card_detail">
+        <h2>{newCard.rfid}</h2>
+        <h2>{newCard.name}</h2>
+        <h2>{newCard.uri}</h2>
         <input value={searchName} onChange={(e) => setSearchName(e.target.value)}/>
         <button onClick={(e) => handleSearch(e)}>Search</button>
-        <button onClick={(e) => handleSubmit(e)}>Submit</button>
         <ul>
-          {albums.map((album) => {return <Album album={album} key={album.id}/>})}
+          {albums.map((album) => <Album album={album} setNewCard={setNewCard} key={album.id}/>)}
         </ul>
       </div>
     );
