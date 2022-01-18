@@ -9,6 +9,7 @@ const CardDetail = ({card, access_token}) => {
   const isRender                     = useRef(true);
   const router                       = useRouter();
   useEffect(async () => {
+    getAlbumFromURI(newCard.uri);
     if (isRender.current === false) {
       const response = await fetch(`http://localhost:4000/card/${card.rfid}`, {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -57,6 +58,18 @@ const CardDetail = ({card, access_token}) => {
     });
     setAlbums(albums);
     setSearchName("");
+  }
+  const getAlbumFromURI = async (uri) => {
+    const albumID = uri.replace(/spotify:album:/, '');
+    console.log(albumID);
+    const response = await fetch(`https://api.spotify.com/v1/albums/${albumID}`, {
+      headers: {
+        Authorization: `Bearer ${access_token}`
+      }
+    });
+    const album = await response.json();
+    console.log(album);
+    return album;
   }
   if (access_token === '') {
     return(

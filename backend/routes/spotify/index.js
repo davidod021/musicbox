@@ -61,7 +61,6 @@ const init = () => {
   });
 
   router.get('/token', (req, rsp) => {
-    console.log(access_token);
     rsp.json({access_token: access_token});
   });
 

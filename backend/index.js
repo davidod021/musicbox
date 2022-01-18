@@ -36,7 +36,10 @@ readable.on("data", (chunk) => {
 });
 
 const updateCSV = async (data) => {
-
+    const writeable = await fs.createWriteStream("../spotify_listtest.csv");
+  csvData.forEach(async (card) =>  {
+    await writeable.write(`${card.rfid},${card.uri},${card.name.replace(/\s/g,'').toLowerCase()}\n\r`);
+  });
 };
 
 const setCSVData = (data) => {

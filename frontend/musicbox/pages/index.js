@@ -33,7 +33,6 @@ export default function Home({cards}) {
 export async function getServerSideProps(context) {
   const resp  = await fetch("http://localhost:4000/card");
   const cards = await resp.json();
-  console.log(cards);
   return {
     props: {cards}
   }
