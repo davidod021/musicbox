@@ -32,6 +32,11 @@ const CardDetail = ({card, access_token}) => {
       return;
     }
   })
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch(e);
+    }
+  }
   const handleSearch = async (e) => {
     const response = await fetch(`https://api.spotify.com/v1/search?type=album&q=${searchName}&limit=10`, {
       headers: {
@@ -66,7 +71,7 @@ const CardDetail = ({card, access_token}) => {
         <h2>{newCard.rfid}</h2>
         <h2>{newCard.name}</h2>
         <h2>{newCard.uri}</h2>
-        <input value={searchName} onChange={(e) => setSearchName(e.target.value)}/>
+        <input value={searchName} onChange={(e) => setSearchName(e.target.value)} onKeyPress={(e) => handleKeyPress(e)}/>
         <button onClick={(e) => handleSearch(e)}>Search</button>
         <ul>
           {albums.map((album) => <Album album={album} setNewCard={setNewCard} key={album.id}/>)}
@@ -83,8 +88,6 @@ export async function getServerSideProps(context) {
   const {access_token} = await resp.json();
   resp = await fetch(`http://localhost:4000/card/${context.params.rfid}`);
   const card = await resp.json();
-  console.log(card);
-  console.log(access_token);
   return {
     props:{card, access_token}
   }
