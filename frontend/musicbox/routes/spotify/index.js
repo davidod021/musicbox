@@ -54,7 +54,7 @@ const init = () => {
       request.post(authOptions, (error, response, body) => {
         if (!error && response.statusCode === 200) {
           access_token = body.access_token;
-          rsp.redirect(`http://localhost:3000/card/${rfid}`);
+          rsp.redirect(`http://localhost:4000/rfid/${rfid}`);
         }
       });
     }

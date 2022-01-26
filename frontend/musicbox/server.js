@@ -9,6 +9,8 @@ const next         = require('next');
 
 const dev          = process.env.NODE_ENV !== 'production';
 const nextApp      = next({dev});
+const handle       = nextApp.getRequestHandler();
+
 
 if (dev) {
   require('dotenv').config();
@@ -22,7 +24,7 @@ app.use(bodyParser.json());
 app.use(cors({origin: 'http://localhost:3000'}));
 
 let csvData = [];
-const readable = fs.createReadStream("../spotify_listtest.csv").setEncoding('utf8');
+const readable = fs.createReadStream("../../spotify_listtest.csv").setEncoding('utf8');
 readable.on("data", (chunk) => {
   const lines = chunk.split(/\r?\n/);
   lines.pop(); // Last eol will create a null entry so strip
@@ -40,7 +42,7 @@ readable.on("data", (chunk) => {
 });
 
 const updateCSV = async (data) => {
-    const writeable = await fs.createWriteStream("../spotify_listtest.csv");
+    const writeable = await fs.createWriteStream("../../spotify_listtest.csv");
   csvData.forEach(async (card) =>  {
     await writeable.write(`${card.rfid},${card.uri},${card.name.replace(/\s/g,'').toLowerCase()}\n\r`);
   });
@@ -59,7 +61,9 @@ nextApp.prepare().then(() => {
   const spotifyRouter  = spotify();
   app.use('/spotify', spotifyRouter)
   app.use('/card', cardRouter);
+  app.all('*', (req, res) => {
+    return handle(req, res);
+  })
   
   app.listen(port, () => console.log(`Listening on port ${port}`));
 }).catch((err) => console.error(err));
-
