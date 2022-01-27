@@ -3,6 +3,7 @@ import Album from '../../components/album'
 
 const CardDetail = ({card, accessToken}) => {
   const [searchName, setSearchName]         = useState("");
+  const [searchNum, setSearchNum]           = useState(0);
   const [albums, setAlbums]                 = useState([]);
   const [newCard, setNewCard]               = useState(card);
   const [newAccessToken, setNewAccessToken] = useState(accessToken);
@@ -29,6 +30,11 @@ const CardDetail = ({card, accessToken}) => {
     };
     getData();
   }, [newCard]);
+  useEffect(()=>{
+    if (isRender.current === false) {
+      albumSearch();
+    }
+  }, [searchNum]);
   useEffect(() => {
     if (isRender.current === true) {
       isRender.current = false;
@@ -37,11 +43,12 @@ const CardDetail = ({card, accessToken}) => {
   })
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      handleSearch(e);
+      setSearchNum(10);
     }
   }
-  const handleSearch = async (e) => {
-    const response = await fetch(`https://api.spotify.com/v1/search?type=album&q=${searchName}&limit=10`, {
+  const albumSearch = async () => {
+    console.log(searchNum);
+    const response = await fetch(`https://api.spotify.com/v1/search?type=album&q=${searchName}&limit=${searchNum}`, {
       headers: {
         Authorization: `Bearer ${newAccessToken}`
       }
@@ -63,7 +70,7 @@ const CardDetail = ({card, accessToken}) => {
       );
     });
     setAlbums(albums);
-    setSearchName("");
+    //setSearchName("");
   }
   const getAlbumFromURI = async (uri) => {
     const albumID = uri.replace(/spotify:album:/, '');
@@ -90,10 +97,19 @@ const CardDetail = ({card, accessToken}) => {
         <h2>{newCard.name}</h2>
         <h2>{newCard.uri}</h2>
         <input value={searchName} onChange={(e) => setSearchName(e.target.value)} onKeyPress={(e) => handleKeyPress(e)}/>
-        <button onClick={(e) => handleSearch(e)}>Search</button>
+        <button onClick={() => setSearchNum(10)}>Search</button>
         <ul>
           {albums.map((album) => <Album album={album} setNewCard={setNewCard} key={album.id}/>)}
         </ul>
+        {
+          (albums.length === 0) || (albums.length === 50) || <button onClick={() => setSearchNum((prevSearchNum) => {
+            if (prevSearchNum < 40) {
+              return prevSearchNum+10
+            }
+            // API limit reached
+            return 50;
+          })}>More</button>         
+        }
       </div>
     );
   }
