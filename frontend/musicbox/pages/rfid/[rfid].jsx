@@ -87,36 +87,27 @@ const CardDetail = ({card, initialToken}) => {
     console.log(album);
     return album;
   }
-  if (token === '') {
-    return(
-      <div className="logged_out">
-        <a href={`http://localhost:4000/spotify/login/${card.rfid}`}>Log in</a>
-      </div>
-    );
-  }
-  else {
-    return(
-      <div className="card_detail">
-        <h2>{newCard.rfid}</h2>
-        <h2>{newCard.name}</h2>
-        <h2>{newCard.uri}</h2>
-        <input value={searchName} onChange={(e) => setSearchName(e.target.value)} onKeyPress={(e) => handleKeyPress(e)}/>
-        <button onClick={() => setSearchNum(10)}>Search</button>
-        <ul>
-          {albums.map((album) => <Album album={album} setNewCard={setNewCard} key={album.id}/>)}
-        </ul>
-        {
-          (albums.length === 0) || (albums.length === 50) || <button className={styles.more} onClick={() => setSearchNum((prevSearchNum) => {
-            if (prevSearchNum < 40) {
-              return prevSearchNum+10
-            }
-            // API limit reached
-            return 50;
-          })}>More</button>         
-        }
-      </div>
-    );
-  }
+  return(
+    <div className="card_detail">
+      <h2>{newCard.rfid}</h2>
+      <h2>{newCard.name}</h2>
+      <h2>{newCard.uri}</h2>
+      <input value={searchName} onChange={(e) => setSearchName(e.target.value)} onKeyPress={(e) => handleKeyPress(e)}/>
+      <button onClick={() => setSearchNum(10)}>Search</button>
+      <ul>
+        {albums.map((album) => <Album album={album} setNewCard={setNewCard} key={album.id}/>)}
+      </ul>
+      {
+        (albums.length === 0) || (albums.length === 50) || <button className={styles.more} onClick={() => setSearchNum((prevSearchNum) => {
+          if (prevSearchNum < 40) {
+            return prevSearchNum+10
+          }
+          // API limit reached
+          return 50;
+        })}>More</button>         
+      }
+    </div>
+  );
 };
 
 export default CardDetail;

@@ -22,7 +22,7 @@ const init = () => {
     return randomString;
   };
 
-  router.get('/login/:rfid', (req, rsp) => {
+  router.get('/login/:rfid?', (req, rsp) => {
     const scope = 'user-read-private user-read-email';
     rfid  = req.params.rfid;
     state = generateRandomString(16);
@@ -54,7 +54,12 @@ const init = () => {
       request.post(authOptions, (error, response, body) => {
         if (!error && response.statusCode === 200) {
           access_token = body.access_token;
-          rsp.redirect(`http://localhost:4000/rfid/${rfid}`);
+          if (!rfid) {
+            console.log("redirecting to /");
+          }
+          else {
+            console.log(`redirecting to /rfid/${rfid}`);
+          }
         }
       });
     }
