@@ -1,8 +1,14 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
-import Card from '../components/card'
+import Head from 'next/head';
+import styles from '../styles/Home.module.css';
+import Card from '../components/card';
+import { useEffect, useContext } from 'react';
+import LoginContext from "../context/logincontext";
 
-export default function Home({cards}) {
+export default function Home({cards, initialToken}) {
+  const {token, setToken} = useContext(LoginContext);
+  useEffect(() => {
+    setToken(initialToken);
+  }, []);
   return (
     <div className={styles.container}>
       <Head>
@@ -30,9 +36,11 @@ export default function Home({cards}) {
 }
 
 export async function getServerSideProps(context) {
-  const resp  = await fetch("http://localhost:4000/card");
+  let resp = await fetch("http://localhost:4000/spotify/token");
+  const {access_token} = await resp.json();
+  resp  = await fetch("http://localhost:4000/card");
   const cards = await resp.json();
   return {
-    props: {cards}
+    props: {cards, initialToken: access_token}
   }
 }

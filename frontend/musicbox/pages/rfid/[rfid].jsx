@@ -1,13 +1,18 @@
-import { useState , useEffect, useRef } from "react";
+import { useState , useEffect, useRef , useContext } from "react";
 import Album from '../../components/album'
+import styles from '../../styles/CardDetail.module.css';
+import LoginContext from "../../context/logincontext";
 
-const CardDetail = ({card, accessToken}) => {
+const CardDetail = ({card, initialToken}) => {
   const [searchName, setSearchName]         = useState("");
   const [searchNum, setSearchNum]           = useState(0);
   const [albums, setAlbums]                 = useState([]);
   const [newCard, setNewCard]               = useState(card);
-  const [newAccessToken, setNewAccessToken] = useState(accessToken);
   const isRender                            = useRef(true);
+  const {token, setToken}                   = useContext(LoginContext);
+  useEffect(() => {
+    setToken(initialToken);
+  }, []);
   useEffect(() => {
     const getData = async () => {
       getAlbumFromURI(newCard.uri);
@@ -50,12 +55,12 @@ const CardDetail = ({card, accessToken}) => {
     console.log(searchNum);
     const response = await fetch(`https://api.spotify.com/v1/search?type=album&q=${searchName}&limit=${searchNum}`, {
       headers: {
-        Authorization: `Bearer ${newAccessToken}`
+        Authorization: `Bearer ${token}`
       }
     });
     const results  = await response.json();
     if (response.status == 401) {
-      setNewAccessToken('');
+      setToken('');
       return;
     }
     const albums = results.albums.items.map((item) => {
@@ -70,20 +75,19 @@ const CardDetail = ({card, accessToken}) => {
       );
     });
     setAlbums(albums);
-    //setSearchName("");
   }
   const getAlbumFromURI = async (uri) => {
     const albumID = uri.replace(/spotify:album:/, '');
     const response = await fetch(`https://api.spotify.com/v1/albums/${albumID}`, {
       headers: {
-        Authorization: `Bearer ${newAccessToken}`
+        Authorization: `Bearer ${token}`
       }
     });
     const album = await response.json();
     console.log(album);
     return album;
   }
-  if (newAccessToken === '') {
+  if (token === '') {
     return(
       <div className="logged_out">
         <a href={`http://localhost:4000/spotify/login/${card.rfid}`}>Log in</a>
@@ -102,7 +106,7 @@ const CardDetail = ({card, accessToken}) => {
           {albums.map((album) => <Album album={album} setNewCard={setNewCard} key={album.id}/>)}
         </ul>
         {
-          (albums.length === 0) || (albums.length === 50) || <button onClick={() => setSearchNum((prevSearchNum) => {
+          (albums.length === 0) || (albums.length === 50) || <button className={styles.more} onClick={() => setSearchNum((prevSearchNum) => {
             if (prevSearchNum < 40) {
               return prevSearchNum+10
             }
@@ -123,7 +127,6 @@ export async function getServerSideProps(context) {
   resp = await fetch(`http://localhost:4000/card/${context.params.rfid}`);
   const card = await resp.json();
   return {
-    props:{card, accessToken:access_token}
+    props:{card, initialToken:access_token}
   }
-  
 }
